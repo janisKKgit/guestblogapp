@@ -7,7 +7,8 @@
             var vm = this;
 
             vm.model = {
-                file_data: []
+                file_data: [],
+                src: null
             };
 
             vm.errors = {};
@@ -22,28 +23,32 @@
                     vm.model.file_data.name = vm.model.file.$ngfName;
                     vm.model.file_data.size = vm.model.file.size;
                     vm.model.file_data.type = vm.model.file.type;
-                }
 
-                Upload.upload({
-                    url: 'api/internal/upload',
-                    data: {
-                        file: vm.model.file,
-                        file_info: vm.model.file_data
-                    }
-                }).then(function (response) {
-                    vm.model['src'] = response.data;
-                    BlogService.save(vm.model, function (response) {
-                        if (response.errors) {
-                            vm.errors = response.errors;
-                            grecaptcha.reset();
-                        } else {
-                            $modalInstance.close();
+                    Upload.upload({
+                        url: 'api/internal/upload',
+                        data: {
+                            file: vm.model.file,
+                            file_info: vm.model.file_data
                         }
+                    }).then(function (response) {
+                        vm.model['src'] = response.data;
+                        vm.createNewEntry();
                     });
-                });
-
-
+                } else {
+                    vm.createNewEntry();
+                }
             };
+
+            vm.createNewEntry = function() {
+                BlogService.save(vm.model, function (response) {
+                    if (response.errors) {
+                        vm.errors = response.errors;
+                        grecaptcha.reset();
+                    } else {
+                        $modalInstance.close();
+                    }
+                });
+            }
 
             vm.cancel = function() {
                 $modalInstance.close();
